@@ -1,0 +1,68 @@
+"""
+Event storage (JSON-backed).
+"""
+
+import json
+import os
+import uuid
+from dataclasses import dataclass, asdict, field
+from datetime import datetime
+from typing import List, Optional
+
+
+@dataclass
+class Event:
+    id: str
+    title: str
+    date: str  # YYYY-MM-DD
+    time: Optional[str] = None
+    repeat: str = "none"  # none | daily | weekly | monthly | yearly
+    remind_days_before: List[int] = field(default_factory=lambda: [0])
+    done: bool = False
+    created_at: Optional[str] = None
+
+
+class EventStore:
+    def __init__(self, path: str):
+        self.path = path
+        if not os.path.exists(path):
+            self._save([])
+
+    def _load(self) -> List[Event]:
+        with open(self.path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return [Event(**e) for e in data.get("events", [])]
+
+    def _save(self, events: List[Event]) -> None:
+        os.makedirs(os.path.dirname(self.path), exist_ok=True)
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump({"events": [asdict(e) for e in events]}, f, ensure_ascii=False, indent=2)
+
+    def add(self, title: str, date: str, time: Optional[str] = None,
+            repeat: str = "none", remind_days_before: Optional[List[int]] = None) -> Event:
+        events = self._load()
+        if remind_days_before is None:
+            remind_days_before = [0]
+        event = Event(
+            id=str(uuid.uuid4())[:8],
+            title=title,
+            date=date,
+            time=time,
+            repeat=repeat,
+            remind_days_before=remind_days_before,
+            created_at=datetime.now().isoformat()
+        )
+        events.append(event)
+        self._save(events)
+        return event
+
+    def list_all(self) -> List[Event]:
+        return self._load()
+
+    def remove(self, event_id: str) -> bool:
+        events = self._load()
+        new_events = [e for e in events if e.id != event_id]
+        if len(new_events) == len(events):
+            return False
+        self._save(new_events)
+        return True
