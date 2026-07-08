@@ -13,6 +13,20 @@ metadata:
 
 中国农历与日程管理工具，适合中文用户日常查询和轻量日程提醒。
 
+## 安装
+
+```bash
+npx skills add klarkxy/skills --skill chinese-calendar
+```
+
+安装后在 Hermes 使用的 Python 环境中安装依赖：
+
+```bash
+pip install -r C:/Users/27837/.hermes/skills/chinese-calendar/requirements.txt
+```
+
+> 注意：如果 Hermes skill 安装路径不同，请将 `C:/Users/27837/.hermes/skills/chinese-calendar` 替换为你的实际安装路径。
+
 ## 日历工具
 
 - `:calendar today`
