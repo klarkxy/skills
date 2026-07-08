@@ -13,6 +13,7 @@ npx skills add klarkxy/skills
 | 技能 | 说明 |
 |------|------|
 | [chinese-calendar](skills/chinese-calendar/) | 中国农历/日程工具：农历转换、节假日查询、日程提醒 |
+| [weather](skills/weather/) | 天气预报：基于 Open-Meteo，默认绍兴新昌 |
 
 ## 使用
 
