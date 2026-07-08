@@ -18,7 +18,7 @@ CN_DAY = ["初一", "初二", "初三", "初四", "初五", "初六", "初七", 
 def solar_to_lunar_str(d: date) -> str:
     """Return Chinese lunar date string for a solar date."""
     z = ZhDate.from_datetime(datetime(d.year, d.month, d.day))
-    leap = "闰" if z.lunar_month == z.leap_month else ""
+    leap = "闰" if z.leap_month else ""
     return f"{z.lunar_year}年{leap}{CN_MONTH[z.lunar_month - 1]}{CN_DAY[z.lunar_day - 1]}"
 
 

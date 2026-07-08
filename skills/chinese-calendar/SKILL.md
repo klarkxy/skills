@@ -48,5 +48,7 @@ metadata:
 ```yaml
 schedule: "0 9 * * *"
 deliver: origin
-prompt: "运行 ~/.hermes/skills/chinese-calendar/scripts/calendar_cli.py event check，如果输出不为空就把结果发给我。"
+prompt: "运行 <技能安装路径>/skills/chinese-calendar/scripts/calendar_cli.py event check，如果输出不为空就把结果发给我。例如：C:\\Users\\27837\\.hermes\\skills\\chinese-calendar\\scripts\\calendar_cli.py event check"
 ```
+
+>注意：Hermes 技能安装路径因配置而异，上述路径仅为示例。请将 `<技能安装路径>` 替换为你的 Hermes skill 安装路径。
