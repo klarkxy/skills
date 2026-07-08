@@ -58,13 +58,17 @@ def cmd_holiday(args):
 
 
 def cmd_event_add(args):
-    e = get_store().add(
-        title=args.title,
-        date=args.date,
-        time=args.time,
-        repeat=args.repeat,
-        remind_days_before=[int(x) for x in args.remind.split(",")] if args.remind else [0]
-    )
+    try:
+        e = get_store().add(
+            title=args.title,
+            date=args.date,
+            time=args.time,
+            repeat=args.repeat,
+            remind_days_before=[int(x) for x in args.remind.split(",")] if args.remind else [0]
+        )
+    except ValueError as exc:
+        print(f"错误：{exc}")
+        return
     print(f"已添加：{e.title} {e.date} {e.time or ''} [ID: {e.id}]")
 
 

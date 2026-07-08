@@ -9,7 +9,10 @@ from events import Event
 
 def next_occurrence(event: Event, from_date: date) -> Optional[date]:
     """Return the next occurrence of an event on or after from_date."""
-    base = date.fromisoformat(event.date)
+    try:
+        base = date.fromisoformat(event.date)
+    except (ValueError, TypeError):
+        return None
 
     if event.repeat == "none":
         return base if base >= from_date else None

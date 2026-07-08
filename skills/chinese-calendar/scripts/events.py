@@ -40,6 +40,16 @@ class EventStore:
 
     def add(self, title: str, date: str, time: Optional[str] = None,
             repeat: str = "none", remind_days_before: Optional[List[int]] = None) -> Event:
+        # Validate date format
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(f"invalid date format: {date}, expected YYYY-MM-DD")
+        if time:
+            try:
+                datetime.strptime(time, "%H:%M")
+            except ValueError:
+                raise ValueError(f"invalid time format: {time}, expected HH:MM")
         events = self._load()
         if remind_days_before is None:
             remind_days_before = [0]
