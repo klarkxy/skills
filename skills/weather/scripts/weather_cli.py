@@ -9,10 +9,6 @@ from datetime import datetime
 
 import requests
 
-# Default location: Xinchang, Shaoxing, Zhejiang
-DEFAULT_LAT = 29.4998
-DEFAULT_LON = 120.9040
-
 
 def geocode_location(query: str):
     url = "https://geocoding-api.open-meteo.com/v1/search"
@@ -61,18 +57,27 @@ def weather_desc(code: int) -> str:
 
 
 def cmd_now(args):
-    data = fetch_weather(DEFAULT_LAT, DEFAULT_LON)
+    if not args.location:
+        print("请使用 --location 指定城市")
+        sys.exit(1)
+    geo = geocode_location(args.location)
+    if geo is None:
+        print(f"未找到地点：{args.location}")
+        sys.exit(1)
+    lat, lon, name, country = geo
+    data = fetch_weather(lat, lon)
     cur = data["current"]
-    loc = "绍兴新昌"
-    print(f"{loc} 当前天气：{weather_desc(cur['weather_code'])}, {cur['temperature_2m']}°C, 湿度{cur['relative_humidity_2m']}%, 风速{cur['wind_speed_10m']}km/h")
+    print(f"{name} 当前天气：{weather_desc(cur['weather_code'])}, {cur['temperature_2m']}°C, 湿度{cur['relative_humidity_2m']}%, 风速{cur['wind_speed_10m']}km/h")
 
 
 def cmd_today(args):
-    query = args.location or "绍兴新昌"
-    geo = geocode_location(query)
+    if not args.location:
+        print("请使用 --location 指定城市")
+        sys.exit(1)
+    geo = geocode_location(args.location)
     if geo is None:
-        print(f"未找到地点：{query}")
-        return
+        print(f"未找到地点：{args.location}")
+        sys.exit(1)
     lat, lon, name, country = geo
     data = fetch_weather(lat, lon)
     daily = data["daily"]
@@ -85,10 +90,11 @@ def main():
     sub = parser.add_subparsers(dest="command")
 
     p = sub.add_parser("now")
+    p.add_argument("--location", default=None)
     p.set_defaults(func=cmd_now)
 
     p = sub.add_parser("today")
-    p.add_argument("--location", default="绍兴新昌")
+    p.add_argument("--location", default=None)
     p.set_defaults(func=cmd_today)
 
     args = parser.parse_args()

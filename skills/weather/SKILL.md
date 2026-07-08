@@ -23,10 +23,10 @@ pip install -r C:/Users/27837/.hermes/skills/weather/requirements.txt
 
 ## 使用
 
-- `:weather today [--location <地炼>]`
-  - 查询今日天气。默认地点为绍兴新昌。
-- `:weather now`
-  - 查询当前实况天气。
+- `:weather today --location <城市>`
+  - 查询今日天气。必须指定城市。
+- `:weather now --location <城市>`
+  - 查询当前实况天气。必须指定城市。
 
 ## 数据来源
 
