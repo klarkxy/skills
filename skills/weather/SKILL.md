@@ -13,13 +13,17 @@ metadata:
 
 ## 安装
 
+```bash
+npx skills add klarkxy/skills@weather
+```
+
 安装后在 Hermes 使用的 Python 环境中安装依赖：
 
 ```bash
-pip install -r C:/Users/27837/.hermes/skills/weather/requirements.txt
+pip install -r ~/.hermes/skills/weather/requirements.txt
 ```
 
-> 注意：路径请根据你的 Hermes skill 安装路径调整。
+> 注意：Windows 下路径通常为 `C:/Users/<你的用户名>/.hermes/skills/weather`，请根据实际安装路径替换。
 
 ## 使用
 

@@ -16,16 +16,16 @@ metadata:
 ## 安装
 
 ```bash
-npx skills add klarkxy/skills --skill chinese-calendar
+npx skills add klarkxy/skills@chinese-calendar
 ```
 
 安装后在 Hermes 使用的 Python 环境中安装依赖：
 
 ```bash
-pip install -r C:/Users/27837/.hermes/skills/chinese-calendar/requirements.txt
+pip install -r ~/.hermes/skills/chinese-calendar/requirements.txt
 ```
 
-> 注意：如果 Hermes skill 安装路径不同，请将 `C:/Users/27837/.hermes/skills/chinese-calendar` 替换为你的实际安装路径。
+> 注意：Windows 下路径通常为 `C:/Users/<你的用户名>/.hermes/skills/chinese-calendar`，请根据实际安装路径替换。
 
 ## 日历工具
 
@@ -62,7 +62,7 @@ pip install -r C:/Users/27837/.hermes/skills/chinese-calendar/requirements.txt
 ```yaml
 schedule: "0 9 * * *"
 deliver: origin
-prompt: "运行 <技能安装路径>/skills/chinese-calendar/scripts/calendar_cli.py event check，如果输出不为空就把结果发给我。例如：C:\\Users\\27837\\.hermes\\skills\\chinese-calendar\\scripts\\calendar_cli.py event check"
+prompt: "运行 <技能安装路径>/skills/chinese-calendar/scripts/calendar_cli.py event check，如果输出不为空就把结果发给我。例如：~/.hermes/skills/chinese-calendar/scripts/calendar_cli.py event check"
 ```
 
->注意：Hermes 技能安装路径因配置而异，上述路径仅为示例。请将 `<技能安装路径>` 替换为你的 Hermes skill 安装路径。
+> 注意：Hermes 技能安装路径因配置而异，上述路径仅为示例。请将 `<技能安装路径>` 替换为你的 Hermes skill 安装路径。
