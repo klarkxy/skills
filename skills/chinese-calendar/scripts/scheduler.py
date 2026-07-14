@@ -2,6 +2,7 @@
 Scheduler: expand repeating events and compute reminders.
 """
 
+from calendar import monthrange
 from datetime import date, timedelta
 from typing import List, Optional, Tuple
 from events import Event
@@ -14,12 +15,18 @@ def next_occurrence(event: Event, from_date: date) -> Optional[date]:
     except (ValueError, TypeError):
         return None
 
+    if from_date <= base:
+        return base
+
     if event.repeat == "none":
-        return base if base >= from_date else None
+        return None
 
     if event.repeat == "yearly":
-        for year in range(from_date.year, from_date.year + 2):
-            d = date(year, base.month, base.day)
+        for year in range(from_date.year, from_date.year + 5):
+            try:
+                d = date(year, base.month, base.day)
+            except ValueError:
+                continue
             if d >= from_date:
                 return d
         return None
@@ -27,10 +34,7 @@ def next_occurrence(event: Event, from_date: date) -> Optional[date]:
     if event.repeat == "monthly":
         y, m = from_date.year, from_date.month
         for _ in range(24):
-            try:
-                d = date(y, m, base.day)
-            except ValueError:
-                d = date(y, m, 28)
+            d = date(y, m, min(base.day, monthrange(y, m)[1]))
             if d >= from_date:
                 return d
             m += 1

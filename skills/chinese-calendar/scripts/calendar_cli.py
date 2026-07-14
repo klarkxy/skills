@@ -7,6 +7,7 @@ import argparse
 import os
 import sys
 from datetime import date
+from pathlib import Path
 
 # Allow running this script directly from the scripts directory
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,14 +20,29 @@ from calendar_tools import (
     solar_to_lunar_str, lunar_to_solar, holiday_info, today_info
 )
 
-DATA_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "data", "events.json"
-)
+DEFAULT_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "events.json"
 
 
-def get_store() -> EventStore:
-    return EventStore(DATA_PATH)
+def get_store(args) -> EventStore:
+    return EventStore(args.data_file)
+
+
+def parse_date(value: str) -> str:
+    try:
+        date.fromisoformat(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("日期必须是 YYYY-MM-DD") from exc
+    return value
+
+
+def parse_remind_days(value: str):
+    try:
+        days = sorted({int(item.strip()) for item in value.split(",") if item.strip()})
+    except ValueError as exc:
+        raise ValueError("提醒天数必须是非负整数") from exc
+    if not days or any(day < 0 for day in days):
+        raise ValueError("提醒天数必须是非负整数")
+    return days
 
 
 def cmd_lunar_to_solar(args):
@@ -59,22 +75,21 @@ def cmd_holiday(args):
 
 def cmd_event_add(args):
     try:
-        e = get_store().add(
+        e = get_store(args).add(
             title=args.title,
             date=args.date,
             time=args.time,
             repeat=args.repeat,
-            remind_days_before=[int(x) for x in args.remind.split(",")] if args.remind else [0]
+            remind_days_before=parse_remind_days(args.remind),
         )
     except ValueError as exc:
-        print(f"错误：{exc}")
-        return
+        raise SystemExit(f"错误：{exc}")
     print(f"已添加：{e.title} {e.date} {e.time or ''} [ID: {e.id}]")
 
 
 def cmd_event_list(args):
     today = date.today()
-    events = upcoming_events(get_store().list_all(), today, args.days)
+    events = upcoming_events(get_store(args).list_all(), today, args.days)
     if not events:
         print(f"未来 {args.days} 天没有日程")
         return
@@ -86,7 +101,7 @@ def cmd_event_list(args):
 def cmd_event_next(args):
     today = date.today()
     candidates = []
-    for e in get_store().list_all():
+    for e in get_store(args).list_all():
         if e.done:
             continue
         occ = next_occurrence(e, today)
@@ -101,15 +116,15 @@ def cmd_event_next(args):
 
 
 def cmd_event_remove(args):
-    if get_store().remove(args.id):
+    if get_store(args).remove(args.id):
         print(f"已删除事件 {args.id}")
     else:
         print(f"未找到事件 {args.id}")
 
 
 def cmd_event_check(args):
-    today = date.today()
-    reminders = check_reminders(get_store().list_all(), today)
+    today = date.fromisoformat(args.date) if args.date else date.today()
+    reminders = check_reminders(get_store(args).list_all(), today)
     if not reminders:
         return
     print("日程提醒：")
@@ -122,6 +137,11 @@ def cmd_event_check(args):
 
 def main():
     parser = argparse.ArgumentParser(prog="calendar")
+    parser.add_argument(
+        "--data-file",
+        default=os.environ.get("CHINESE_CALENDAR_DATA_FILE", str(DEFAULT_DATA_PATH)),
+        help="事件 JSON 文件路径，默认使用本技能目录下的 data/events.json",
+    )
     sub = parser.add_subparsers(dest="command")
 
     # Calendar tools
@@ -133,14 +153,14 @@ def main():
     p.set_defaults(func=cmd_lunar_to_solar)
 
     p = sub.add_parser("solar-to-lunar")
-    p.add_argument("--date", required=True)
+    p.add_argument("--date", required=True, type=parse_date)
     p.set_defaults(func=cmd_solar_to_lunar)
 
     p = sub.add_parser("today")
     p.set_defaults(func=cmd_today)
 
     p = sub.add_parser("holiday")
-    p.add_argument("--date", required=True)
+    p.add_argument("--date", required=True, type=parse_date)
     p.set_defaults(func=cmd_holiday)
 
     # Event tools
@@ -149,7 +169,7 @@ def main():
 
     p = event_sub.add_parser("add")
     p.add_argument("--title", required=True)
-    p.add_argument("--date", required=True)
+    p.add_argument("--date", required=True, type=parse_date)
     p.add_argument("--time")
     p.add_argument("--repeat", default="none",
                     choices=["none", "daily", "weekly", "monthly", "yearly"])
@@ -168,6 +188,7 @@ def main():
     p.set_defaults(func=cmd_event_remove)
 
     p = event_sub.add_parser("check")
+    p.add_argument("--date", type=parse_date, help="用于测试或补跑的日期，格式 YYYY-MM-DD")
     p.set_defaults(func=cmd_event_check)
 
     args = parser.parse_args()

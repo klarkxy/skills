@@ -1,28 +1,3 @@
 {
-  "events": [
-    {
-      "id": "b78cb89b",
-      "title": "valid",
-      "date": "2026-07-15",
-      "time": "14:30",
-      "repeat": "none",
-      "remind_days_before": [
-        0
-      ],
-      "done": false,
-      "created_at": "2026-07-08T20:31:06.251266"
-    },
-    {
-      "id": "ba618b2f",
-      "title": "monthly",
-      "date": "2026-01-31",
-      "time": null,
-      "repeat": "monthly",
-      "remind_days_before": [
-        0
-      ],
-      "done": false,
-      "created_at": "2026-07-08T20:31:06.689644"
-    }
-  ]
+  "events": []
 }

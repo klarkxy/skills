@@ -7,7 +7,8 @@ import os
 import uuid
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
-from typing import List, Optional
+from pathlib import Path
+from typing import List, Optional, Union
 
 
 @dataclass
@@ -23,20 +24,27 @@ class Event:
 
 
 class EventStore:
-    def __init__(self, path: str):
-        self.path = path
-        if not os.path.exists(path):
+    def __init__(self, path: Union[str, Path]):
+        self.path = Path(path)
+        if not self.path.exists():
             self._save([])
 
     def _load(self) -> List[Event]:
-        with open(self.path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with self.path.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"invalid event data: {self.path}") from exc
+        if not isinstance(data, dict) or not isinstance(data.get("events", []), list):
+            raise ValueError(f"invalid event data: {self.path}")
         return [Event(**e) for e in data.get("events", [])]
 
     def _save(self, events: List[Event]) -> None:
-        os.makedirs(os.path.dirname(self.path), exist_ok=True)
-        with open(self.path, "w", encoding="utf-8") as f:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = self.path.with_suffix(f"{self.path.suffix}.tmp")
+        with temporary_path.open("w", encoding="utf-8") as f:
             json.dump({"events": [asdict(e) for e in events]}, f, ensure_ascii=False, indent=2)
+        os.replace(temporary_path, self.path)
 
     def add(self, title: str, date: str, time: Optional[str] = None,
             repeat: str = "none", remind_days_before: Optional[List[int]] = None) -> Event:
@@ -50,9 +58,13 @@ class EventStore:
                 datetime.strptime(time, "%H:%M")
             except ValueError:
                 raise ValueError(f"invalid time format: {time}, expected HH:MM")
+        if repeat not in {"none", "daily", "weekly", "monthly", "yearly"}:
+            raise ValueError(f"invalid repeat: {repeat}")
         events = self._load()
         if remind_days_before is None:
             remind_days_before = [0]
+        if any(not isinstance(day, int) or isinstance(day, bool) or day < 0 for day in remind_days_before):
+            raise ValueError("remind days must be non-negative")
         event = Event(
             id=str(uuid.uuid4())[:8],
             title=title,
@@ -60,7 +72,7 @@ class EventStore:
             time=time,
             repeat=repeat,
             remind_days_before=remind_days_before,
-            created_at=datetime.now().isoformat()
+            created_at=datetime.now().isoformat(timespec="seconds")
         )
         events.append(event)
         self._save(events)

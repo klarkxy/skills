@@ -1,2 +1,2 @@
-chinese-calendar>=0.1.1
-zhdate>=0.3.0
+chinese-calendar>=1.11.0
+zhdate==0.1

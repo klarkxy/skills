@@ -17,15 +17,12 @@ metadata:
 
 ```bash
 npx skills add klarkxy/skills@chinese-calendar
+pip install -r <技能安装路径>/requirements.txt
 ```
 
-安装后在 Hermes 使用的 Python 环境中安装依赖：
+## 使用
 
-```bash
-pip install -r ~/.hermes/skills/chinese-calendar/requirements.txt
-```
-
-> 注意：Windows 下路径通常为 `C:/Users/<你的用户名>/.hermes/skills/chinese-calendar`，请根据实际安装路径替换。
+用 `scripts/calendar_cli.py` 运行命令。事件默认保存在本技能目录的 `data/events.json`，也可在命令前传入 `--data-file <path>`，或设置 `CHINESE_CALENDAR_DATA_FILE` 环境变量。
 
 ## 日历工具
 
@@ -48,21 +45,21 @@ pip install -r ~/.hermes/skills/chinese-calendar/requirements.txt
   - 显示最近的日程。
 - `:calendar event remove --id <ID>`
   - 删除日程。
-- `:calendar event check`
-  - 被 cron 调用，输出需要提醒的日程。
+- `:calendar event check [--date YYYY-MM-DD]`
+  - 输出当天需要提醒的日程；`--date` 用于测试或补跑。
 
 ## 数据存储
 
-日程保存在 `data/events.json`。
+日程默认保存在本技能目录的 `data/events.json`。写入采用临时文件替换，避免中断时损坏数据。
 
 ## 每日提醒 cron
 
-建议设置一个每天早上 9 点的 cron 任务：
+每天只运行一次 `event check`。有输出才推送，无输出不发消息；重复运行会重复输出同一提醒。
 
 ```yaml
 schedule: "0 9 * * *"
 deliver: origin
-prompt: "运行 <技能安装路径>/skills/chinese-calendar/scripts/calendar_cli.py event check，如果输出不为空就把结果发给我。例如：~/.hermes/skills/chinese-calendar/scripts/calendar_cli.py event check"
+prompt: "运行 <技能安装路径>/scripts/calendar_cli.py event check；如果输出不为空就把结果发给我。"
 ```
 
-> 注意：Hermes 技能安装路径因配置而异，上述路径仅为示例。请将 `<技能安装路径>` 替换为你的 Hermes skill 安装路径。
+将 `<技能安装路径>` 替换为本地实际路径。
